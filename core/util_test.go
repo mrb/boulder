@@ -11,10 +11,12 @@ import (
 	"math"
 	"math/big"
 	"net/url"
+	"reflect"
 	"sort"
 	"testing"
 
 	"github.com/letsencrypt/boulder/Godeps/_workspace/src/github.com/letsencrypt/go-jose"
+	"github.com/letsencrypt/boulder/probs"
 	"github.com/letsencrypt/boulder/test"
 )
 
@@ -119,4 +121,38 @@ func TestUniqueLowerNames(t *testing.T) {
 	u := UniqueLowerNames([]string{"foobar.com", "fooBAR.com", "baz.com", "foobar.com", "bar.com", "bar.com"})
 	sort.Strings(u)
 	test.AssertDeepEquals(t, []string{"bar.com", "baz.com", "foobar.com"}, u)
+}
+
+// FIXME move to core, i guess
+func TestProblemDetailsFromError(t *testing.T) {
+	testCases := []struct {
+		err        error
+		statusCode int
+	}{
+		{InternalServerError("foo"), 500},
+		{NotSupportedError("foo"), 501},
+		{MalformedRequestError("foo"), 400},
+		{UnauthorizedError("foo"), 403},
+		{NotFoundError("foo"), 404},
+		{SyntaxError("foo"), 400},
+		{SignatureValidationError("foo"), 400},
+		{RateLimitedError("foo"), 429},
+		{LengthRequiredError("foo"), 411},
+		{BadNonceError("foo"), 400},
+	}
+	for _, c := range testCases {
+		p := ProblemDetailsForError(c.err, "k")
+		if p.HTTPStatus != c.statusCode {
+			t.Errorf("Incorrect status code for %s. Expected %d, got %d", reflect.TypeOf(c.err).Name(), c.statusCode, p.HTTPStatus)
+		}
+	}
+
+	expected := &probs.ProblemDetails{
+		Type:       probs.MalformedProblem,
+		HTTPStatus: 200,
+		Detail:     "gotcha",
+	}
+	p := ProblemDetailsForError(expected, "k")
+	test.AssertDeepEquals(t, expected, p)
+
 }
