@@ -5,6 +5,7 @@ This is an initial implementation of an ACME-based CA. The [ACME protocol](https
 
 [![Build Status](https://travis-ci.org/letsencrypt/boulder.svg)](https://travis-ci.org/letsencrypt/boulder)
 [![Coverage Status](https://coveralls.io/repos/letsencrypt/boulder/badge.svg)](https://coveralls.io/r/letsencrypt/boulder)
+[![Code Climate Issue Count](https://codeclimate.com/github/letsencrypt/boulder/badges/issue_count.svg)](https://codeclimate.com/github/letsencrypt/boulder)
 
 Quickstart
 ------
